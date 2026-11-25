@@ -16,6 +16,9 @@ This repository contains daily tasks, source code, and documentation for hands-o
 ├── day2/
 │   ├── task2.py       # Multi-turn Showroom Chatbot with car catalogue, tools, memory & error handling
 │   └── readme.md      # Day 2 documentation, concepts, and execution guide
+├── day3/
+│   ├── task3.py       # LangChain Car Showroom Assistant with LCEL, memory & evaluation suite
+│   └── readme.md      # Day 3 documentation, Agent vs Chatbot, and LangChain concepts
 ├── .env.example       # Template for environment configuration
 ├── .gitignore         # Standard Python gitignore
 └── README.md          # Repository overview
@@ -37,6 +40,12 @@ This repository contains daily tasks, source code, and documentation for hands-o
 - Multi-turn conversation management with a sliding window buffer (`MAX_TURNS = 8`).
 - Robust exception handling (`RateLimitError`, `AuthenticationError`, `APIConnectionError`).
 
+### [Day 3 - Task 3: Your First Agent & LangChain](./day3)
+- Foundations of Agentic AI: Chatbot vs. Agent, the four pillars (Brain, Instructions, Tools, Memory), and the ReAct Agent Loop.
+- Rebuilding the assistant using **LangChain** and LCEL (`prompt | llm | StrOutputParser()`).
+- Conversational memory management with `MessagesPlaceholder("history")`.
+- Automated testing and regression evaluation suite (`run_tests`) asserting quantitative pass rates.
+
 ---
 
 ## Quick Start
@@ -49,7 +58,7 @@ cd 24P31A42A2_DriveReady_OPC_2026
 
 ### 2. Install Dependencies
 ```bash
-pip install -q openai
+pip install -q openai langchain langchain-groq python-dotenv
 ```
 
 ### 3. API Key Setup
@@ -63,14 +72,16 @@ $env:agent1 = "your_groq_api_key_here"
 export agent1="your_groq_api_key_here"
 ```
 
-### 4. Run Tasks
+### 4. Run Daily Tasks
 - **Day 1**:
   ```bash
-  cd day1
-  python task1.py
+  cd day1 && python task1.py
   ```
 - **Day 2**:
   ```bash
-  cd ../day2
-  python task2.py
+  cd day2 && python task2.py
+  ```
+- **Day 3**:
+  ```bash
+  cd day3 && python task3.py
   ```
