@@ -40,7 +40,7 @@ LLM APIs are stateless. To enable multi-turn memory:
 ## File Structure
 ```
 day2/
-├── task.py      # Multi-turn chatbot implementation with memory, tools, and error handling
+├── task2.py     # Multi-turn chatbot implementation with memory, tools, and error handling
 └── readme.md    # Documentation and explanation of concepts
 ```
 
@@ -74,7 +74,7 @@ pip install openai python-dotenv
 
 ### 2. Execute Task
 ```bash
-python task.py
+python task2.py
 ```
 
 ---

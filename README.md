@@ -14,7 +14,7 @@ This repository contains daily tasks, source code, and documentation for hands-o
 │   ├── task1.py       # Sweet Crumbs Bakery Assistant using ChatGroq & Prompt Engineering
 │   └── README.md      # Day 1 Task description, setup instructions, and sample output
 ├── day2/
-│   ├── task.py        # Multi-turn chatbot with memory, decorators, tools & error handling (agent1 key)
+│   ├── task2.py       # Multi-turn chatbot with memory, decorators, tools & error handling (agent1 key)
 │   └── readme.md      # Day 2 documentation, concepts, and execution guide
 ├── .gitignore         # Standard Python gitignore
 └── README.md          # Repository overview
@@ -58,5 +58,5 @@ pip install openai langchain-groq python-dotenv
 - **Day 2**:
   ```bash
   cd ../day2
-  python task.py
+  python task2.py
   ```
