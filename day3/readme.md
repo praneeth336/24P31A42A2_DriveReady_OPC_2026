@@ -6,7 +6,6 @@ Day 3 transitions from one-off chatbot prompts to **LangChain LCEL chains**, **s
 The implementation in `task3.py` applies all Day 3 concepts directly to the **AI Car Showroom Assistant** case study.
 
 ---
-
 ## Task Implementation Details (`task3.py`)
 
 The code in `task3.py` is organized into 9 structured sections:
@@ -115,8 +114,6 @@ export agent1="your_groq_api_key_here"
 ```bash
 python task3.py
 ```
-
----
 
 ## Sample Console Output
 
