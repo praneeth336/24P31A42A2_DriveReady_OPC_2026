@@ -11,11 +11,12 @@ This repository contains daily tasks, source code, and documentation for hands-o
 ```
 24P31A42A2_DriveReady_OPC_2026/
 ├── day1/
-│   ├── task1.py       # Sweet Crumbs Bakery Assistant using ChatGroq & Prompt Engineering
-│   └── README.md      # Day 1 Task description, setup instructions, and sample output
+│   ├── task1.py       # AI Car Showroom Assistant using OpenAI client on Groq
+│   └── README.md      # Day 1 Task description, guidelines, and execution details
 ├── day2/
-│   ├── task2.py       # Multi-turn chatbot with memory, decorators, tools & error handling (agent1 key)
+│   ├── task2.py       # Multi-turn Showroom Chatbot with car catalogue, tools, memory & error handling
 │   └── readme.md      # Day 2 documentation, concepts, and execution guide
+├── .env.example       # Template for environment configuration
 ├── .gitignore         # Standard Python gitignore
 └── README.md          # Repository overview
 ```
@@ -24,15 +25,17 @@ This repository contains daily tasks, source code, and documentation for hands-o
 
 ## Modules Overview
 
-### [Day 1 - Foundations of Agentic AI & LLM Guardrails](./day1)
-- Model initialization with `langchain-groq` using `openai/gpt-oss-120b`.
-- System prompt engineering enforcing operational facts, rules, and polite response constraints under 60 words.
+### [Day 1 - Task 1: AI Car Showroom Assistant](./day1)
+- Initializing the OpenAI SDK connected to Groq (`openai/gpt-oss-20b`).
+- System prompt engineering implementing a 10-point guideline for professional car showroom interactions.
+- Customer query execution with token usage tracking.
 
-### [Day 2 - Prompts, Memory, and the Python Agents Need](./day2)
-- Multi-turn conversation management via OpenAI-compatible endpoint with Groq.
-- Sliding memory window (`MAX_TURNS = 8`) to preserve context without blowing up token limits.
-- Core Python primitives: Dictionary lookups (`.get()`), type-annotated tool functions, `@log_call` decorator, and resilient `try / except` blocks.
-- Configured using Groq API key named `agent1`.
+### [Day 2 - Task 2: Multi-Turn Car Showroom Assistant with Catalog & Tools](./day2)
+- Structured data modeling of a showroom vehicle catalogue (`CARS`).
+- Four-part system prompt (Role, Facts, Rules, Format) with English and Telugu multilingual capability.
+- Function tools (`get_car_details`, `get_car_price`) wrapped with `@log_call` decorator for runtime tracing.
+- Multi-turn conversation management with a sliding window buffer (`MAX_TURNS = 8`).
+- Robust exception handling (`RateLimitError`, `AuthenticationError`, `APIConnectionError`).
 
 ---
 
@@ -46,10 +49,21 @@ cd 24P31A42A2_DriveReady_OPC_2026
 
 ### 2. Install Dependencies
 ```bash
-pip install openai langchain-groq python-dotenv
+pip install -q openai
 ```
 
-### 3. Run Tasks
+### 3. API Key Setup
+In Google Colab, add your Groq API key under Secrets as `agent1`.
+For local terminal runs:
+```bash
+# Windows PowerShell
+$env:agent1 = "your_groq_api_key_here"
+
+# Linux / macOS
+export agent1="your_groq_api_key_here"
+```
+
+### 4. Run Tasks
 - **Day 1**:
   ```bash
   cd day1

@@ -1,105 +1,95 @@
-# Day 2 · Prompts, Memory, and the Python Agents Need
+# Day 2 - Task 2: Multi-Turn Car Showroom Assistant with Catalog & Tools
 
 ## Overview
-Day 2 focuses on controlling language model output through prompt engineering, managing conversation history (memory), and mastering the core Python primitives required for building autonomous agents.
+Day 2 builds upon the showroom assistant by introducing **structured data modeling**, **function tools with logging decorators**, **multi-turn conversational memory with a sliding window**, and **production error handling**.
 
 ---
 
-## Key Topics Covered
+## Key Components (`task2.py`)
 
-### 1. Messages and Roles
-Every API call sends a structured list of messages:
-- **`system`**: Developer instructions (the customer never sees this).
-- **`user`**: Input query from the customer.
-- **`assistant`**: Previous model responses.
-The model reads the full script from top to bottom and predicts the next assistant reply.
+### 1. Showroom Vehicle Catalog (`CARS`)
+The vehicle inventory is represented as a structured Python dictionary containing prices, fuel options, and body types:
+- **Tata Nexon**: ₹8–15 lakh | Petrol, Diesel, Electric | SUV
+- **Hyundai Creta**: ₹11–20 lakh | Petrol, Diesel | SUV
+- **Maruti Suzuki Swift**: ₹6–9 lakh | Petrol | Hatchback
+- **Mahindra Thar**: ₹11–18 lakh | Petrol, Diesel | SUV
 
-### 2. The 4-Part System Prompt
-A robust system prompt functions like an employee job description:
-- **Role**: Persona definition (*"Assistant for Sweet Crumbs Home Bakery"*).
-- **Facts**: Essential ground truth (*Menu prices, 24-hour notice, eggless options*).
-- **Rules**: Guardrails and constraints (*Never promise delivery times, check with owner if unsure*).
-- **Format**: Tone and length limits (*Under 50 words, friendly, English or Telugu matching customer*).
+### 2. Four-Part System Prompt
+- **ROLE**: Friendly and professional AI assistant for a car showroom.
+- **FACTS**: Injected directly from `json.dumps(CARS)`.
+- **RULES**: Explore cars, explain specs, recommend vehicles, compare models, never invent prices, check with showroom if unsure, remember customer name and preferences.
+- **FORMAT**: Short, clear, friendly; English or Telugu matching the customer.
 
-### 3. Memory by Hand (Sliding Context Window)
-LLM APIs are stateless. To enable multi-turn memory:
-- User questions and assistant answers are appended to `history`.
-- To avoid context window explosion and unnecessary token usage, a sliding window is applied:
-  ```python
-  recent = [history[0]] + history[1:][-MAX_TURNS:]
-  ```
+### 3. Tool Functions with `@log_call` Decorator
+The `@log_call` decorator wraps functions using `functools.wraps` to inspect inputs and return values at runtime without altering core logic:
+- `get_car_details(car_name: str) -> dict`: Returns the full dictionary specification for a model.
+- `get_car_price(car_name: str) -> str`: Returns the listed price range for a model.
 
-### 4. Python for Agents
-1. **Dictionaries & JSON**: Data modeling of menu items, using `.get()` for safe fallbacks, and `json.dumps()` / `json.loads()`.
-2. **Type Hints & Docstrings**: Defining clear function contracts (`def get_price(item: str, qty: int = 1) -> int:`) so future agents can inspect and use them as tools.
-3. **Decorators (`@log_call`)**: Wrapping functions to add logging and observability without altering function logic.
-4. **Resilience (`try / except`)**: Catching specific exceptions (`RateLimitError`, `APIConnectionError`, `AuthenticationError`) gracefully without crashing.
+### 4. Sliding Context Window (`MAX_TURNS = 8`)
+To maintain conversational continuity without overflowing model context or incurring excessive token costs:
+```python
+recent = [history[0]] + history[1:][-MAX_TURNS:]
+```
+This ensures the system prompt is always preserved while older turns roll off cleanly.
+
+### 5. Defensive Error Handling (`try / except`)
+Catches API exceptions gracefully and informs the user politely instead of crashing:
+- `RateLimitError`: Advises the customer that the system is busy and to retry shortly.
+- `AuthenticationError`: Flags API key configuration issues.
+- `APIConnectionError`: Handles network connectivity drops.
 
 ---
 
 ## File Structure
 ```
 day2/
-├── task2.py     # Multi-turn chatbot implementation with memory, tools, and error handling
+├── task2.py     # Multi-turn showroom assistant with car catalogue, tools, and error handling
 └── readme.md    # Documentation and explanation of concepts
 ```
 
 ---
 
-## Configuration & Credentials
-The Groq API key is referenced as `agent1` and loaded securely from the environment:
-```python
-agent1 = os.environ.get("agent1") or os.environ.get("GROQ_API_KEY")
+## Setup & Running
+
+### 1. Prerequisites
+Ensure the OpenAI client SDK is installed:
+```bash
+pip install -q openai
 ```
 
-### Setting the Key
+### 2. API Key Configuration
+In Google Colab, add your Groq API key in Colab Secrets as `agent1`.
+If running locally, set the environment variable:
 ```bash
 # Windows PowerShell
 $env:agent1 = "your_groq_api_key_here"
-# or
-$env:GROQ_API_KEY = "your_groq_api_key_here"
 
 # Linux / macOS
 export agent1="your_groq_api_key_here"
 ```
 
----
-
-## How to Run
-
-### 1. Install Dependencies
-```bash
-pip install openai python-dotenv
-```
-
-### 2. Execute Task
+### 3. Run the Chatbot
 ```bash
 python task2.py
 ```
 
 ---
 
-## Sample Execution & Test Output
+## Sample Conversation Output
 
 ```text
-=== Sweet Crumbs Bakery Chatbot - Day 2 ===
-Powered by Groq API Key (agent1)
+Car Showroom Assistant
+Type 'exit' or 'bye' to stop.
 
-Testing get_price tool:
-   [log] get_price('cupcake', 6) -> 480
-Total for 6 cupcakes: Rs 480
+You: Hi, my name is Priya. What SUVs do you have under 15 lakhs?
+Bot: Hello Priya! Great to meet you. For SUVs under ₹15 lakh, we have the Tata Nexon (₹8–15 lakh), which comes in Petrol, Diesel, and Electric. The Mahindra Thar also starts at ₹11 lakh. Would you prefer an electric or petrol/diesel option?
 
-Starting chat session (Type 'bye', 'exit', or 'quit' to end):
+You: Does the Nexon have an EV variant?
+Bot: Yes, Priya! The Tata Nexon is available in an Electric variant along with Petrol and Diesel options. It is priced between ₹8–15 lakh depending on the variant.
 
-You: Hi, my name is Ravi.
-Bot: Hi Ravi! 😊 Welcome to Sweet Crumbs Home Bakery. How can I assist you with your cake order today?
+You: Thar price entha?
+Bot: మహీంద్రా థార్ ధర ₹11–18 లక్షల మధ్య ఉంటుంది. ఇది పెట్రోల్ మరియు డీజిల్ వేరియంట్లలో అందుబాటులో ఉంది.
 
-You: Do you have eggless chocolate cake?
-Bot: Yes, Ravi! All our cakes, including our chocolate cake (₹650), have eggless versions available. Please note that we need at least 24 hours' notice for all orders. Would you like to place an order?
-
-You: What is my name and what is the price for 2 chocolate cakes?
-Bot: Your name is Ravi! Two chocolate cakes will cost ₹1,300. Please let us know at least 24 hours in advance so we can bake them fresh for you.
-
-You: quit
-Bot: Thank you for visiting Sweet Crumbs!
+You: exit
+Bot: Thank you for visiting our showroom!
 ```
