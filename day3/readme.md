@@ -1,100 +1,154 @@
 # Day 3 · Your First Agent: What an Agent Is, and LangChain
 
 ## Overview
-Day 3 marks the transition from simple chatbots to **agentic architectures**. It covers the theoretical foundations of what turns a language model into an autonomous agent, how an agent reasons and acts in a loop, and how **LangChain** and LCEL (LangChain Expression Language) simplify building, chaining, and evaluating stateful AI systems.
+Day 3 transitions from one-off chatbot prompts to **LangChain LCEL chains**, **systematic regression testing via test datasets (`tests.csv`)**, **prompt improvement cycles**, **temperature sensitivity analysis**, and **job classification (Agent vs. LLM call vs. Plain code)**.
+
+The implementation in `task3.py` applies all Day 3 concepts directly to the **AI Car Showroom Assistant** case study.
 
 ---
 
-## Key Concepts
+## Task Implementation Details (`task3.py`)
 
-### 1. Chatbot vs. Agent
-- **Chatbot**: Answers questions using words only. The customer still has to perform the actions.
-- **Agent**: Given an objective/goal, it decides the necessary steps, executes tools (functions, APIs, database updates), observes results, and acts until the goal is achieved.
+The code in `task3.py` is organized into 9 structured sections:
 
-### 2. The Four Parts of an Agent
-Every AI agent is built from four core pillars:
-1. **Brain**: The foundation LLM (`ChatGroq` with `openai/gpt-oss-20b`).
-2. **Instructions**: System prompt defining the persona, facts, rules, and output format.
-3. **Tools**: Functions the agent is permitted to execute (`get_car_details`, `get_car_price`).
-4. **Memory**: Conversational state (`MessagesPlaceholder("history")`) maintained across turns.
+### 1. Business System Prompt & Showroom Catalog
+- **Authentication & Model**: Retrieves the Groq API key from Colab Secrets (`userdata.get("agent1")`) and connects to `openai/gpt-oss-20b`.
+- **Catalogue (`CARS`)**: Structured inventory dictionary for showroom vehicles:
+  - **Tata Nexon**: ₹8–15 lakh | Petrol, Diesel, Electric | SUV
+  - **Hyundai Creta**: ₹11–20 lakh | Petrol, Diesel | SUV
+  - **Maruti Suzuki Swift**: ₹6–9 lakh | Petrol | Hatchback
+  - **Mahindra Thar**: ₹11–18 lakh | Petrol, Diesel | SUV
+- **System Prompt**: Defines the showroom assistant persona, dynamic `{car_catalogue}` facts, 8 operational rules, dynamic `{extra_rule}` placeholder for iterative improvements, and concise formatting constraints.
 
-### 3. The Agent Loop (ReAct: Reason + Act)
-$$\text{Goal} \longrightarrow \text{Think} \longrightarrow \text{Act (Tool Call)} \longrightarrow \text{Observe (Tool Result)} \longrightarrow \text{Repeat / Answer}$$
-- The model evaluates what information is needed, asks to call a tool, inspects the returned result, and iterates until it can formulate the final answer.
-
-### 4. Three Levels of AI
-- **Level 1 (Traditional AI / Rule-based)**: Fixed deterministic logic (e.g., calculating EMI or GST).
-- **Level 2 (Generative AI)**: One prompt producing creative text without external actions.
-- **Level 3 (Agentic AI)**: Generative reasoning coupled with autonomous tool execution.
-
-### 5. LangChain & LCEL Pipeline
-Using LangChain Expression Language (LCEL), components are linked via the pipe (`|`) operator:
+### 2. LangChain Chain Construction (`create_chain`)
+Builds a reusable LangChain pipeline using the pipe operator (`|`):
 ```python
 chain = prompt | llm | StrOutputParser()
 ```
-- **`ChatPromptTemplate`**: Fills system and user templates dynamically.
-- **`MessagesPlaceholder("history")`**: Injects past conversational turns seamlessly.
-- **`StrOutputParser`**: Extracts clean string content directly from the model response.
+- **`ChatGroq`**: Language model initialized with parameterized temperature.
+- **`ChatPromptTemplate`**: Formatted with the system prompt, `MessagesPlaceholder("history")` for conversational context, and human query `{question}`.
+- **`prompt.partial(...)`**: Dynamically binds the car catalogue JSON and any optional rule additions without recreating the template from scratch.
+- **`StrOutputParser`**: Extracts clean string output from the LLM's response.
 
-### 6. Automated Testing & Evals (`tests.csv`)
-System prompts require rigorous regression testing to ensure prompt edits don't break existing behavior. Each test case asserts that the model response contains an expected keyword/phrase (`must_include`), computing a quantitative **pass rate**:
-$$\text{Pass Rate} = \frac{\text{Passed Tests}}{\text{Total Tests}} \times 100\%$$
+### 3. Automated Test Suite (`tests.csv`)
+Automatically generates a 10-question evaluation dataset (`tests.csv`) representing real customer inquiries paired with mandatory keywords/phrases (`must_include`):
+| # | Customer Question | Must Include | Evaluates |
+|---|---|---|---|
+| 1 | What is the price of Tata Nexon? | `8–15` | Price accuracy |
+| 2 | Tell me about Hyundai Creta. | `creta` | Model knowledge |
+| 3 | Which car is an electric SUV? | `nexon` | EV feature lookup |
+| 4 | What is the price of Maruti Swift? | `6–9` | Hatchback pricing |
+| 5 | Tell me about Mahindra Thar. | `thar` | Off-road SUV facts |
+| 6 | Which cars have diesel fuel? | `diesel` | Fuel filter query |
+| 7 | Which car is a hatchback? | `swift` | Body type classification |
+| 8 | Do you have a BMW? | `showroom` | Fallback rule compliance |
+| 9 | What fuel types are available in Tata Nexon? | `electric` | Variant verification |
+| 10 | What type of vehicle is Hyundai Creta? | `SUV` | Vehicle type recall |
+
+### 4. Test Runner & Pass Rate Calculation (`run_tests`)
+Reads `tests.csv`, queries the chain for each test case with a clean history (`"history": []`), performs case-insensitive verification, displays `PASS` or `FAIL` for each question, and calculates the overall percentage pass rate:
+$$\text{Pass Rate} = \left(\frac{\text{Passed Tests}}{\text{Total Tests}}\right) \times 100\%$$
+
+### 5. Baseline Evaluation
+Runs the initial showroom chain at `temperature=0.2` and measures the starting baseline pass rate (`baseline_rate`).
+
+### 6. Prompt Improvement Cycle
+- **Change Made**: Injects an extra rule via `{extra_rule}`:
+  ```text
+  IMPORTANT:
+  When a requested car is not in the catalogue,
+  clearly include the exact phrase 'confirm with the showroom'.
+  ```
+- **Regression Evaluation**: Re-runs the test suite against `improved_chain` (`improved_rate`) and quantitatively compares the pass rate before and after the prompt change.
+
+### 7. Temperature Sensitivity Analysis (`temperature = 1.0`)
+- Explores model behavior under higher randomness (`temperature = 1.0`).
+- Runs the test suite **twice** on the same creative chain to observe whether non-zero temperature causes answer variance or shifts the pass rate between runs (`Run 1` vs `Run 2`).
+
+### 8. Agent or Not? (Job Classification)
+Categorizes three common showroom operations based on architectural complexity:
+1. **"Calculate the total car price with a fixed discount"** $\rightarrow$ **Plain Code**
+   *(Exact arithmetic with predetermined formulas; no AI required).*
+2. **"Explain the features of Tata Nexon"** $\rightarrow$ **One LLM Call**
+   *(Single text generation request from known catalogue facts).*
+3. **"Understand customer requirements, look up multiple cars, compare them and recommend a suitable car"** $\rightarrow$ **Agent**
+   *(Dynamic multi-step goal requiring understanding, tool lookups, comparisons, and iterative reasoning).*
+
+### 9. Interactive Showroom Chat
+Interactive conversation loop allowing live testing with customer memory:
+- Appends each turn to `history` (`("human", user_text)` and `("ai", answer)`).
+- Carries customer context forward across multiple questions.
+- Exits cleanly on typing `exit`, `bye`, or `quit`.
 
 ---
 
 ## File Structure
 ```
 day3/
-├── task3.py     # LangChain chain with memory, car catalogue, and automated evaluation harness
-└── readme.md    # Concepts, architecture, and execution guide
+├── task3.py     # Complete Day 3 implementation (Catalogue, Chain, Evals, Comparisons & Chat)
+├── tests.csv    # Generated evaluation dataset (10 questions + must_include assertions)
+└── readme.md    # Detailed documentation matching task3.py
 ```
 
 ---
 
-## Setup & Running
+## Setup & Execution
 
-### 1. Prerequisites
-Install LangChain and the Groq integration package:
+### 1. Install Dependencies
 ```bash
-pip install -q langchain langchain-groq
+pip install -qU langchain langchain-groq
 ```
 
-### 2. API Key Configuration
-In Google Colab, add your Groq API key under **Secrets** (key icon) as `agent1` (or `GROQ_API_KEY`).
-For local terminal runs:
+### 2. Configure API Key
+In Google Colab, add your Groq API key in the **Secrets** tab (key icon) as `agent1`.
+
+If running locally:
 ```bash
 # Windows PowerShell
 $env:agent1 = "your_groq_api_key_here"
-# or
-$env:GROQ_API_KEY = "your_groq_api_key_here"
 
 # Linux / macOS
 export agent1="your_groq_api_key_here"
 ```
 
-### 3. Execute Task
+### 3. Run the Script
 ```bash
 python task3.py
 ```
 
 ---
 
-## Sample Execution & Test Output
+## Sample Console Output
 
 ```text
-=== Multi-Turn Conversational Memory Test ===
-User: Hi, I'm Rahul. I am looking for a compact SUV.
-Bot:  Hello Rahul! Welcome to our showroom. We have great SUV options like the Tata Nexon (₹8–15 lakh, available in Petrol, Diesel, and Electric) and the Hyundai Creta (₹11–20 lakh). Would you prefer a petrol, diesel, or electric SUV?
+tests.csv created successfully.
 
-User: What is my name and what car type did I ask for?
-Bot:  Your name is Rahul, and you asked for a compact SUV!
+========== BASELINE TEST ==========
+PASS | What is the price of Tata Nexon? -> The Tata Nexon is priced between ₹8–15 lakh.
+PASS | Tell me about Hyundai Creta. -> The Hyundai Creta is a popular SUV priced at ₹11–20 lakh...
+...
+Pass rate: 9/10 = 90%
 
-=== Automated Showroom Evals (tests.csv) ===
-PASS | What is the price range of Tata Nexon? → The Tata Nexon is priced between ₹8–15 lakh. It comes in Petrol, Diesel
-PASS | Do you have an electric SUV? → Yes! We offer the Tata Nexon SUV in an Electric variant along with Pet
-PASS | How much is Maruti Suzuki Swift? → The Maruti Suzuki Swift is priced in the range of ₹6–9 lakh.
-PASS | Do you have a BMW sedan? → We do not have BMW sedans in our current catalogue. Please confirm with the showroom.
-PASS | Which cars are available in diesel? → The Tata Nexon, Hyundai Creta, and Mahindra Thar are available in diesel.
+========== IMPROVED PROMPT TEST ==========
+PASS | Do you have a BMW? -> We currently do not have BMW vehicles. Please confirm with the showroom.
+...
+Pass rate: 10/10 = 100%
 
-5/5 passed (100%)
+========== IMPROVEMENT COMPARISON ==========
+Before improvement: 90 %
+After improvement: 100 %
+Result: Pass rate increased.
+
+========== TEMPERATURE COMPARISON ==========
+Run 1: 90 %
+Run 2: 90 %
+
+========== AGENT OR NOT? ==========
+Calculate the total car price with a fixed discount -> Plain code
+Explain the features of Tata Nexon -> One LLM call
+Understand customer requirements, look up multiple cars, compare them and recommend a suitable car -> Agent
+
+========== CAR SHOWROOM ASSISTANT ==========
+You: Hi, I'm Rahul. What is the price of Thar?
+Bot: Hello Rahul! The Mahindra Thar is priced between ₹11–18 lakh.
 ```

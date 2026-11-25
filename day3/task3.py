@@ -237,8 +237,7 @@ JOBS = {
     "Explain the features of Tata Nexon":
         "One LLM call",
 
-    "Understand customer requirements, look up multiple cars,
-     compare them and recommend a suitable car":
+    "Understand customer requirements, look up multiple cars, compare them and recommend a suitable car":
         "Agent"
 }
 
