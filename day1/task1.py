@@ -1,5 +1,5 @@
 """
-Day 01 - Task 1: Sweet Crumbs Home Bakery Assistant
+Day 1 - Task 1: Sweet Crumbs Home Bakery Assistant
 Demonstrates:
 - Setting up ChatGroq with LangChain
 - Designing constrained system prompts (Role, Facts, Rules, Format)
@@ -39,25 +39,16 @@ def get_api_key() -> str:
 
 
 # System Prompt Defining Persona, Facts, Rules, and Output Formatting
-SYSTEM_PROMPT = """You are the assistant for Sweet Crumbs Home Bakery.
+SYSTEM = """You are the assistant for Sweet Crumbs Home Bakery.
 Facts: we bake to order; orders need 24 hours' notice; all cakes have eggless versions.
 Rules: never promise delivery times; if you do not know, say so.
 Format: reply politely in under 60 words."""
 
 
-def init_llm(model: str = "openai/gpt-oss-120b", temperature: float = 0.0) -> ChatGroq:
-    """Initialize LangChain ChatGroq client."""
-    get_api_key()
-    return ChatGroq(
-        model=model,
-        temperature=temperature
-    )
-
-
-def ask_bakery_assistant(llm: ChatGroq, question: str) -> str:
+def ask(llm: ChatGroq, question: str) -> str:
     """Query the bakery assistant with a customer question."""
     messages = [
-        ("system", SYSTEM_PROMPT),
+        ("system", SYSTEM),
         ("human", question)
     ]
     response = llm.invoke(messages)
@@ -65,22 +56,26 @@ def ask_bakery_assistant(llm: ChatGroq, question: str) -> str:
 
 
 def main():
-    print("=== Sweet Crumbs Home Bakery Assistant (Day 1) ===")
+    print("=== Sweet Crumbs Home Bakery Assistant (Day 1 - Task 1) ===")
     try:
-        llm = init_llm()
+        get_api_key()
+        llm = ChatGroq(
+            model="openai/gpt-oss-120b",
+            temperature=0
+        )
     except Exception as e:
         print(f"Initialization error: {e}")
         return
 
     sample_queries = [
-        "Can I get my order tomorrow?",
-        "Do you have eggless chocolate cake?",
-        "Can you deliver at 5:00 PM sharp?"
+        "can i get my order tommorrow",
+        "Do you make eggless cakes?",
+        "Can you deliver at 6 PM today?"
     ]
 
     for query in sample_queries:
-        print(f"\nCustomer: {query}")
-        answer = ask_bakery_assistant(llm, query)
+        print(f"\nUser: {query}")
+        answer = ask(llm, query)
         print(f"Assistant: {answer}")
 
 
