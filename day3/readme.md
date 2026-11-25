@@ -11,13 +11,13 @@ The implementation in `task3.py` applies all Day 3 concepts directly to the **AI
 The code in `task3.py` is organized into 9 structured sections:
 
 ### 1. Business System Prompt & Showroom Catalog
-- **Authentication & Model**: Retrieves the Groq API key from Colab Secrets (`userdata.get("agent1")`) and connects to `openai/gpt-oss-20b`.
-- **Catalogue (`CARS`)**: Structured inventory dictionary for showroom vehicles:
+  - **Authentication & Model**: Retrieves the Groq API key from Colab Secrets (`userdata.get("agent1")`) and connects to `openai/gpt-oss-20b`.
+  - **Catalogue (`CARS`)**: Structured inventory dictionary for showroom vehicles:
   - **Tata Nexon**: ₹8–15 lakh | Petrol, Diesel, Electric | SUV
   - **Hyundai Creta**: ₹11–20 lakh | Petrol, Diesel | SUV
   - **Maruti Suzuki Swift**: ₹6–9 lakh | Petrol | Hatchback
   - **Mahindra Thar**: ₹11–18 lakh | Petrol, Diesel | SUV
-- **System Prompt**: Defines the showroom assistant persona, dynamic `{car_catalogue}` facts, 8 operational rules, dynamic `{extra_rule}` placeholder for iterative improvements, and concise formatting constraints.
+  - **System Prompt**: Defines the showroom assistant persona, dynamic `{car_catalogue}` facts, 8 operational rules, dynamic `{extra_rule}` placeholder for iterative improvements, and concise formatting constraints.
 
 ### 2. LangChain Chain Construction (`create_chain`)
 Builds a reusable LangChain pipeline using the pipe operator (`|`):
