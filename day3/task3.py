@@ -1,4 +1,3 @@
-
 !pip install -qU langchain langchain-groq
 
 import os
@@ -195,7 +194,6 @@ elif improved_rate < baseline_rate:
 else:
     print("Result: Pass rate remained the same.")
 
-
 # ==================================================
 # 7. SWITCH: TEMPERATURE = 1.0
 # RUN TESTS TWICE
@@ -218,7 +216,6 @@ print("\n========== TEMPERATURE COMPARISON ==========")
 print("Run 1:", temperature_run1, "%")
 print("Run 2:", temperature_run2, "%")
 
-
 # ==================================================
 # 8. AGENT OR NOT?
 # CLASSIFY THREE SHOWROOM JOBS
@@ -239,7 +236,6 @@ print("\n========== AGENT OR NOT? ==========")
 
 for job, category in JOBS.items():
     print(job, "->", category)
-
 
 # ==================================================
 # 9. INTERACTIVE CAR SHOWROOM CHAT
