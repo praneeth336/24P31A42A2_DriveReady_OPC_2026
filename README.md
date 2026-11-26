@@ -19,6 +19,9 @@ This repository contains daily tasks, source code, and documentation for hands-o
 ├── day3/
 │   ├── task3.py       # LangChain Car Showroom Assistant with LCEL, memory & evaluation suite
 │   └── readme.md      # Day 3 documentation, Agent vs Chatbot, and LangChain concepts
+├── day4/
+│   ├── task4.py       # Tools, Pydantic Structured Output, and Google Sheets Integration
+│   └── readme.md      # Day 4 documentation on function calling, Pydantic, and gspread
 ├── .env.example       # Template for environment configuration
 ├── .gitignore         # Standard Python gitignore
 └── README.md          # Repository overview
@@ -46,6 +49,13 @@ This repository contains daily tasks, source code, and documentation for hands-o
 - Conversational memory management with `MessagesPlaceholder("history")`.
 - Automated testing and regression evaluation suite (`run_tests`) asserting quantitative pass rates.
 
+### [Day 4 - Task 4: Tools, Structured Output & Google Sheets](./day4)
+- Agent tools via `@tool`: `get_car_details`, `get_car_price`, and `log_enquiry`.
+- Strict schema validation with **Pydantic** (`CarEnquiry`, `Literal` constraints).
+- Real-time cloud persistence by appending validated customer leads to **Google Sheets** using `gspread`.
+- Comprehensive 14-rule system prompt enforcing enquiry details collection and customer confirmation.
+- Direct structured output extraction with `llm.with_structured_output(CarEnquiry)` over messy chat messages.
+
 ---
 
 ## Quick Start
@@ -58,7 +68,7 @@ cd 24P31A42A2_DriveReady_OPC_2026
 
 ### 2. Install Dependencies
 ```bash
-pip install -q openai langchain langchain-groq python-dotenv
+pip install -q openai langchain langchain-groq gspread python-dotenv
 ```
 
 ### 3. API Key Setup
@@ -84,4 +94,8 @@ export agent1="your_groq_api_key_here"
 - **Day 3**:
   ```bash
   cd day3 && python task3.py
+  ```
+- **Day 4**:
+  ```bash
+  cd day4 && python task4.py
   ```
