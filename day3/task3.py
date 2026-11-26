@@ -114,7 +114,6 @@ with open("tests.csv", "w", newline="", encoding="utf-8") as file:
 
 print("tests.csv created successfully.")
 
-
 # ==================================================
 # 4. RUN TESTS AND CALCULATE PASS RATE
 # ==================================================
@@ -156,7 +155,6 @@ def run_tests(chain):
 
     return rate
 
-
 # ==================================================
 # 5. BASELINE TEST
 # ==================================================
@@ -165,7 +163,6 @@ print("\n========== BASELINE TEST ==========")
 
 chain = create_chain(0.2)
 baseline_rate = run_tests(chain)
-
 
 # ==================================================
 # 6. IMPROVE: CHANGE ONE PROMPT RULE
