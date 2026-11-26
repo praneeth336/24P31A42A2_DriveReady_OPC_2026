@@ -68,7 +68,6 @@ FORMAT:
 Keep responses short, clear and friendly.
 """
 
-
 # ==================================================
 # 2. CREATE LANGCHAIN CHAIN
 # ==================================================
@@ -91,7 +90,6 @@ def create_chain(temperature, extra_rule=""):
     )
 
     return prompt | llm | StrOutputParser()
-
 
 # ==================================================
 # 3. YOUR TESTS: CREATE tests.csv
