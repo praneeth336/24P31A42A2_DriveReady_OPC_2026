@@ -1,6 +1,6 @@
 !pip install -qU langchain langchain-groq langgraph chromadb gspread
 
-# ==============================================================================
+# ===============================================================================
 # DAY 5: MEMORY AND RAG (CAR SHOWROOM ASSISTANT)
 
 # This module combines:
@@ -12,7 +12,7 @@
 # 6. LangGraph Agent with Checkpointer (InMemorySaver) for multi-tenant memory
 # 7. Multi-Customer Conversation Testing with thread_id session isolation
 # 8. Automated Evaluation Test Suite asserting policy answers and safety fallbacks
-# ==============================================================================
+# ===============================================================================
 
 import os
 import json
@@ -26,9 +26,9 @@ import chromadb
 from langgraph.checkpoint.memory import InMemorySaver
 from langchain.agents import create_agent
 
-# ==============================================================================
+# ===============================================================================
 # 1. SETUP & AUTHENTICATION
-# ==============================================================================
+# ===============================================================================
 
 # Fetch Groq API Key from Google Colab Secrets
 api_key = userdata.get("agent1") or userdata.get("GROQ_API_KEY")
@@ -165,9 +165,9 @@ showroom_faq.upsert(
 print("Knowledge stored:", showroom_faq.count(), "facts")
 
 
-# ==============================================================================
+# ===============================================================================
 # 4. AGENT TOOLS
-# ==============================================================================
+# ===============================================================================
 
 # Tool 1: Lookup car specifications from the catalogue
 @tool
