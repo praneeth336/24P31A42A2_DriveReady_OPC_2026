@@ -416,7 +416,6 @@ MESSAGES = [
     """
 ]
 
-
 print("STRUCTURED OUTPUT TESTS")
 
 for i, message in enumerate(MESSAGES, 1):
