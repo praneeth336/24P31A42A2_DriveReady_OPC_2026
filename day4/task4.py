@@ -86,7 +86,6 @@ CARS = {
     }
 }
 
-
 # ==========================================
 # 2. PYDANTIC CUSTOMER ENQUIRY MODEL
 # ==========================================
@@ -123,7 +122,6 @@ class CarEnquiry(BaseModel):
     purchase_timeline: str = Field(
         description="When the customer plans to purchase the car"
     )
-
 
 # ==========================================
 # 3. TOOL 1: GET CAR DETAILS
