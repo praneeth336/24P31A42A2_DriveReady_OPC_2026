@@ -1,27 +1,29 @@
 # Day 5 · Memory and RAG: An Agent that Remembers and Looks Things Up
 
 ## Overview
-Day 5 completes the single-agent architecture. The AI Car Showroom Assistant learns two vital capabilities:
-1. **Conversation Memory (Threads)**: Automatically remembers each customer's dialogue using LangGraph's checkpointer (`InMemorySaver` and `thread_id`) without mixing up separate users.
-2. **Retrieval-Augmented Generation (RAG)**: Searches the showroom's 16 official policies from a **ChromaDB** vector database instead of carrying everything in the prompt, answering accurately without hallucinating.
+Day 5 delivers a complete, production-grade **AI Car Showroom Assistant** by unifying conversational memory and knowledge retrieval:
+- **Conversation Memory (Threads)**: Uses LangGraph's `InMemorySaver` checkpointer and `thread_id` to maintain state across conversational turns without mixing up separate customer sessions.
+- **Retrieval-Augmented Generation (RAG)**: Integrates an embedded **ChromaDB** vector database indexing 16 showroom policies (test drives, loans, warranties, bookings, exchanges), preventing hallucinations.
+- **Deterministic Action Tools**: Reuses catalogue lookup (`get_car_details`, `get_car_price`) and Pydantic-validated Google Sheets persistence (`log_enquiry`).
+- **Safety Fallback & Automated Testing**: Enforces a strict refusal rule for unsupported questions and proves performance with a 5-question automated regression test suite.
 
 ---
 
-## The 8 Core Topics & Theoretical Foundations
+## Conceptual Deep Dive & Core Topics
 
 ### 1. Three Kinds of Memory
-An agent can remember three distinct categories of information:
+An agent manages three separate layers of memory:
 
-| Kind of Memory | What It Holds | How Long It Lasts | Real-World Analogy | Car Showroom Example |
+| Kind of Memory | What It Holds | Lifetime | Real-World Analogy | Car Showroom Example |
 | :--- | :--- | :--- | :--- | :--- |
-| **Conversation Memory** (Short-term) | Messages within the active chat | One conversation session | Shopkeeper's **notepad** during a call | *"Ravi asked for Tata Nexon a minute ago"* |
-| **Customer Memory** (Long-term) | Facts saved across conversations | Weeks or months | The **customer register** | *"Ravi prefers diesel vehicles"* |
-| **Knowledge** (Documents / Policies) | The business's rules & documentation | Until documents update | The **policy manual** on the shelf | *"Test drives require preferred date and time"* |
+| **Conversation Memory** (Short-term) | Dialogue within the active chat | Single session | Shopkeeper's **notepad** during a call | *"Ravi asked for Tata Nexon a minute ago"* |
+| **Customer Memory** (Long-term) | Preferences saved across visits | Weeks / Months | The **customer register** | *"Ravi prefers diesel vehicles and high safety ratings"* |
+| **Knowledge** (Documents / RAG) | Official business policies | Until documents change | The **policy manual** on the shelf | *"Test drives require preferred date and time"* |
 
 ---
 
 ### 2. Conversation Memory: Threads (`checkpointer` + `thread_id`)
-- **The Problem**: Passing a single `history` list works for one customer. When multiple customers chat concurrently, one global history mixes up names and orders.
+- **The Problem**: In production, hundreds of customers interact with the showroom at the same time. Storing messages in a single list causes cross-customer data leakage.
 - **The Solution**: LangGraph's **checkpointer** (`InMemorySaver`) manages state across multiple conversations.
 - **How It Works**:
   - Pass `checkpointer=InMemorySaver()` when building the agent via `create_agent`.
@@ -83,7 +85,8 @@ RAG executes in three clear steps:
 1. **Retrieve**: Search the vector database using the customer's question (`search_showroom_faq`).
 2. **Augment**: Inject the top retrieved policy documents into the model's prompt.
 3. **Generate**: The LLM crafts an answer *strictly grounded* in those retrieved documents.
-- **Open-Book Exam Analogy**: An exam where you are allowed to consult the official textbook, with a strict rule: answer only what is written in the book, and if an answer is missing, honestly state *"I don't have that information. Please check with the showroom team."*
+- **Open-Book Exam Analogy**: An exam where you are allowed to consult the official textbook, with a strict rule: answer only what is written in the book, and if an answer is missing, honestly state:
+  > *"I don't have that information. Please check with the showroom team."*
 
 ---
 
@@ -94,7 +97,7 @@ With Day 5, all 5 pillars of a production single agent are assembled:
 | :--- | :--- | :--- |
 | **Brain** | `ChatGroq` (`openai/gpt-oss-20b`) | Reasoning and tool selection |
 | **Instructions** | System Prompt (Role, Rules, Format) | Operational guidelines and constraints |
-| **Tools** | `get_car_details`, `get_car_price`, `search_showroom_faq` | External actions and facts lookup |
+| **Tools** | `get_car_details`, `get_car_price`, `log_enquiry`, `search_showroom_faq` | External actions and facts lookup |
 | **Memory** | LangGraph `InMemorySaver` with `thread_id` | Isolated customer conversational history |
 | **Knowledge** | ChromaDB Collection (`car_showroom_faq`) | Semantic policy retrieval (RAG) |
 
@@ -115,37 +118,38 @@ With Day 5, all 5 pillars of a production single agent are assembled:
 
 ---
 
-## Program Walkthrough (`task5.py`)
+## Program Walkthrough & Architecture (`task5.py`)
 
-### 1. Showroom Policy Knowledge Base (16 FAQs)
-Stored inside ChromaDB under `car_showroom_faq`:
-- `test_drive`, `booking`, `booking_amount`, `finance`, `emi`, `exchange`, `insurance`, `registration`, `warranty`, `service`, `delivery`, `discounts`, `availability`, `colours`, `documents`, `cancellation`.
+`task5.py` is cleanly organized into 8 distinct sections, heavily commented for readability:
 
-### 2. Available Tools
-1. **`get_car_details(car_name)`**: Returns vehicle type, price, and fuel options from catalogue (`CARS`).
-2. **`get_car_price(car_name)`**: Returns listed showroom price.
-3. **`search_showroom_faq(question)`**: Performs vector similarity search over ChromaDB and returns top 3 matching policies.
+1. **Setup & Authentication**: Reads `agent1` (or `GROQ_API_KEY`) from Colab Secrets, initializes `ChatGroq(model="openai/gpt-oss-20b", temperature=0.2)`, and authenticates with Google Sheets (`gspread`).
+2. **Catalogue & Pydantic Schema**: Defines the `CARS` inventory dictionary (Nexon, Creta, Swift, Thar) and the `CarEnquiry` Pydantic model.
+3. **ChromaDB Vector Store (RAG)**: Indexes 16 showroom policies into `car_showroom_faq` via `showroom_faq.upsert`.
+4. **Agent Tools**:
+   - `get_car_details(car_name)`: Returns body style, pricing, and fuel variants.
+   - `get_car_price(car_name)`: Returns official price range.
+   - `log_enquiry(...)`: Validates and appends confirmed customer leads to Google Sheets.
+   - `search_showroom_faq(question)`: Queries ChromaDB for top 3 matching policies.
+5. **Agent with Checkpointer**: Configures `create_agent` with `SYSTEM` prompt and `checkpointer=InMemorySaver()`.
+6. **Multi-Tenant Chat Interface**: Implements `chat(thread_id, message)` passing `config={"configurable": {"thread_id": thread_id}}`.
+7. **Multi-Customer Demo**: Tests Customer 1 (`customer_101`), Customer 2 (`customer_202`), and an out-of-scope question (`customer_303`).
+8. **Automated Regression Suite**: Evaluates 5 test cases testing policy recall and fallback compliance.
 
-### 3. Agent System Prompt
-```text
-ROLE: Helpful AI assistant for a car showroom.
-RULES:
-1. Use get_car_details for vehicle specifications.
-2. Use get_car_price for vehicle prices.
-3. Use search_showroom_faq for showroom policies.
-4. Never invent prices, specifications or showroom policies.
-5. If the FAQ does not contain the answer, say:
-   "I don't have that information. Please check with the showroom team."
-6. Remember details shared earlier in the same conversation.
-7. Do not share one customer's conversation with another customer.
-FORMAT: Give clear, concise and friendly answers.
-```
+---
 
-### 4. Running in Google Colab
+## Setup & Running in Google Colab
+
+### 1. Install Dependencies
 ```bash
-!pip install -qU langchain langchain-groq langgraph chromadb
+!pip install -qU langchain langchain-groq langgraph chromadb gspread
 ```
-Add your Groq API key in Google Colab Secrets under `agent1` (or `GROQ_API_KEY`), then run:
+
+### 2. Configure Colab Secrets
+In Google Colab, open the **Secrets (key icon)** tab:
+- **Key**: `agent1` (or `GROQ_API_KEY`)
+- **Value**: *Your Groq API key*
+
+### 3. Run the Script
 ```bash
 python task5.py
 ```
