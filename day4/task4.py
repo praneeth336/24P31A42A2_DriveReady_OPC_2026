@@ -56,6 +56,7 @@ from typing import Literal
 from pydantic import BaseModel, Field
 from langchain.tools import tool
 
+
 # ==========================================
 # 1. CAR SHOWROOM DATABASE
 # ==========================================
@@ -85,6 +86,7 @@ CARS = {
         "type": "SUV"
     }
 }
+
 
 # ==========================================
 # 2. PYDANTIC CUSTOMER ENQUIRY MODEL
