@@ -2,7 +2,7 @@
 
 # ==============================================================================
 # DAY 5: MEMORY AND RAG (CAR SHOWROOM ASSISTANT)
-# 
+
 # This module combines:
 # 1. Environment Setup & Groq LLM initialization
 # 2. Google Sheets Lead Logging setup (from Day 4)
