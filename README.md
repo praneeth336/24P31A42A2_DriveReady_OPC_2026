@@ -22,6 +22,9 @@ This repository contains daily tasks, source code, and documentation for hands-o
 ├── day4/
 │   ├── task4.py       # Tools, Pydantic Structured Output, and Google Sheets Integration
 │   └── readme.md      # Day 4 documentation on function calling, Pydantic, and gspread
+├── day5/
+│   ├── task5.py       # RAG with ChromaDB, LangGraph Multi-Tenant Memory & Evaluation Suite
+│   └── readme.md      # Day 5 documentation on vector search, checkpointers, and safety fallbacks
 ├── .env.example       # Template for environment configuration
 ├── .gitignore         # Standard Python gitignore
 └── README.md          # Repository overview
@@ -56,6 +59,12 @@ This repository contains daily tasks, source code, and documentation for hands-o
 - Comprehensive 14-rule system prompt enforcing enquiry details collection and customer confirmation.
 - Direct structured output extraction with `llm.with_structured_output(CarEnquiry)` over messy chat messages.
 
+### [Day 5 - Task 5: RAG with ChromaDB & Multi-Tenant Memory](./day5)
+- Semantic knowledge retrieval with **ChromaDB** vector store holding 16 showroom policies (test drives, loans, warranty, exchange, etc.).
+- Custom `@tool` `search_showroom_faq` for context-grounded policy answers.
+- Multi-tenant state isolation using **LangGraph** `InMemorySaver` and `thread_id` session routing.
+- Automated 5-question policy regression test suite verifying factual answers and safe fallback compliance.
+
 ---
 
 ## Quick Start
@@ -68,7 +77,7 @@ cd 24P31A42A2_DriveReady_OPC_2026
 
 ### 2. Install Dependencies
 ```bash
-pip install -q openai langchain langchain-groq gspread python-dotenv
+pip install -q openai langchain langchain-groq langgraph chromadb gspread python-dotenv
 ```
 
 ### 3. API Key Setup
@@ -98,4 +107,8 @@ export agent1="your_groq_api_key_here"
 - **Day 4**:
   ```bash
   cd day4 && python task4.py
+  ```
+- **Day 5**:
+  ```bash
+  cd day5 && python task5.py
   ```
