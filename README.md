@@ -25,6 +25,9 @@ This repository contains daily tasks, source code, and documentation for hands-o
 ├── day5/
 │   ├── task5.py       # RAG with ChromaDB, LangGraph Multi-Tenant Memory & Evaluation Suite
 │   └── readme.md      # Day 5 documentation on vector search, checkpointers, and safety fallbacks
+├── day6/
+│   ├── task6.py       # Multi-Agent Router Workflow with LangGraph, Specialist Agents & Streaming
+│   └── readme.md      # Day 6 documentation on workflows, planning, state, and conditional edges
 ├── .env.example       # Template for environment configuration
 ├── .gitignore         # Standard Python gitignore
 └── README.md          # Repository overview
@@ -64,6 +67,13 @@ This repository contains daily tasks, source code, and documentation for hands-o
 - Custom `@tool` `search_showroom_faq` for context-grounded policy answers.
 - Multi-tenant state isolation using **LangGraph** `InMemorySaver` and `thread_id` session routing.
 - Automated 5-question policy regression test suite verifying factual answers and safe fallback compliance.
+
+### [Day 6 - Task 6: Workflows, Planning & LangGraph](./day6)
+- Transitions from Level 2 single agent to Level 3 multi-agent architecture.
+- Deterministic workflow router built with **LangGraph** (`StateGraph`, `START`, `END`, conditional branching).
+- Centralized `BakeryState` schema (`TypedDict`) traveling across nodes.
+- Separation of concerns: dedicated `faq_agent` and `order_agent` with scoped tools.
+- Observability with step-by-step update streaming (`graph.stream`) and Mermaid visual diagrams.
 
 ---
 
@@ -111,4 +121,8 @@ export agent1="your_groq_api_key_here"
 - **Day 5**:
   ```bash
   cd day5 && python task5.py
+  ```
+- **Day 6**:
+  ```bash
+  cd day6 && python task6.py
   ```
